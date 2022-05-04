@@ -1,6 +1,6 @@
-import { View, Text, Platform, KeyboardAvoidingView  } from 'react-native'
+import { View, Text, Platform, KeyboardAvoidingView, MapView  } from 'react-native'
 import React, {useState, useEffect, useCallback} from 'react';
-import { GiftedChat, Bubble, InputToolbar, Actions } from 'react-native-gifted-chat';
+import { GiftedChat, Bubble, InputToolbar, Actions, ActionsProps } from 'react-native-gifted-chat';
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { addDoc, collection, getDocs, getFirestore, onSnapshot, where, query, orderBy } from "firebase/firestore";
@@ -8,11 +8,14 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import './fontawesome';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import CustomActions from './CustomActions';
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+//Ignores warning due to expo and async storage
+import {LogBox} from 'react-native';
+LogBox.ignoreLogs(['Warning: AsyncStorage has been extracted from react-native core']);
+
+
 const firebaseConfig = {
   apiKey: "AIzaSyDnVfMWEnDy7xbpWneNJS1lMcpWX5cJKOs",
   authDomain: "textable-4be18.firebaseapp.com",
@@ -26,6 +29,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
 
 
 export default function Chat(props) {
@@ -78,9 +82,6 @@ export default function Chat(props) {
 
       }
     })
-
-    
-    
   },[])
 
   
@@ -139,7 +140,7 @@ export default function Chat(props) {
     try {
       console.log('saving messages...');
 
-      console.log(JSON.stringify(messages));
+      // console.log(JSON.stringify(messages));
       await AsyncStorage.setItem('messages', JSON.stringify(messages));
         
       console.log('successfully saved messages');
@@ -150,9 +151,7 @@ export default function Chat(props) {
   }
 
 
-
-
-  async function deleteMessages(message) {
+  async function deleteMessages() {
     try {
       await AsyncStorage.removeItem('messages');
       setmessages([]);
@@ -169,6 +168,9 @@ export default function Chat(props) {
   }, [messages])
 
   const onSend = useCallback((messages = []) => { 
+    console.log('onSend is called!')
+    console.log('messages in onSend: ')
+    console.log(messages);
     setnewMessage(messages[0]);
     setmessages(previousMessages => GiftedChat.append(previousMessages, messages))
   }, []);
@@ -176,6 +178,8 @@ export default function Chat(props) {
   
   
   function renderBubble(props) {
+    console.log('This is the props in renderBubble: ')
+    console.log(props.currentMessage);
     return <Bubble {...props} wrapperStyle={{ right: 
       { backgroundColor: '#000' }
     }}/>
@@ -183,14 +187,44 @@ export default function Chat(props) {
 
   function renderInputToolbar(props) {
     return (isConnected) ? <InputToolbar {...props} placeholderTextColor='#000' containerStyle={styles.textBar} /> : null
-  } //renderActions={() => (<Actions icon={() => (<FontAwesomeIcon icon="fa-solid fa-paper-plane-top" />)}/>)
-  //renderInputToolbar={props => renderInputToolbar(props)}
+  } 
+
+
+
+  function renderCustomActions(props) {
+    return <CustomActions {...props}/>
+  }
+
+
+  function renderCustomView(props) {
+    const {currentMessage} = props;
+   
+    if (currentMessage.location) {
+      console.log('This is current location in renderCustomView: ')
+      console.log(currentMessage.location.latitude);
+      return <MapView style={{width: 150,
+        height: 100,
+        borderRadius: 13,
+        margin: 3}}
+      region={{
+        latitude: currentMessage.location.latitude,
+        longitude: currentMessage.location.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      }}/>
+    }
+    return null
+  }
+  
   
   return (
     <View style={[styles.container, {backgroundColor: color}]}>
       <View style={styles.chat}>
         <GiftedChat messages={messages} onSend={newMessages => onSend(newMessages)} user={{_id: 1}} renderBubble={renderBubble} 
-        renderInputToolbar={props => renderInputToolbar(props)}/>
+        renderInputToolbar={props => renderInputToolbar(props)}
+        renderActions={renderCustomActions}
+        renderCustomView={renderCustomView}
+        />
 
         { Platform.OS === 'android' ? <KeyboardAvoidingView behavior="height" /> : null}
       </View>
