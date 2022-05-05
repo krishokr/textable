@@ -23,9 +23,10 @@ export default class CustomActions extends Component {
                 console.log('This is the location: ');
                 const latitude = JSON.stringify(result.coords.latitude);
                 const longitude = JSON.stringify(result.coords.longitude);
-           
+                console.log('Type of: ')
+                console.log(typeof(latitude));
                 
-                this.props.onSend([{location: {latitude, longitude}, text: `Latitude: ${latitude},\nLongitude: ${longitude}`}]);
+                this.props.onSend([{location: {latitude, longitude}}]);
 
             }
         }

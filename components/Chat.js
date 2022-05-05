@@ -1,4 +1,5 @@
-import { View, Text, Platform, KeyboardAvoidingView, MapView  } from 'react-native'
+import { View, Text, Platform, KeyboardAvoidingView } from 'react-native';
+import MapView from 'react-native-maps';
 import React, {useState, useEffect, useCallback} from 'react';
 import { GiftedChat, Bubble, InputToolbar, Actions, ActionsProps } from 'react-native-gifted-chat';
 // Import the functions you need from the SDKs you need
@@ -8,7 +9,6 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import './fontawesome';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import CustomActions from './CustomActions';
 
 //Ignores warning due to expo and async storage
@@ -41,6 +41,10 @@ export default function Chat(props) {
   const color = props.route.params.color;
   const messagesCollectionRef = collection(db, "messages");
 
+
+  useEffect(() => {
+    AsyncStorage.getItem('messages').then(res => console.log(res));
+  }, [])
   
 
   useEffect(() => {
@@ -123,7 +127,7 @@ export default function Chat(props) {
 
   async function addMessage(messageObj) {
     
-    const docRef = await addDoc(messagesCollectionRef, {...messageObj, uid});
+    const docRef = await addDoc(messagesCollectionRef, messageObj);
     
     return docRef
   }
@@ -131,7 +135,7 @@ export default function Chat(props) {
   useEffect(() => {
     //waits until the uid and the newMessage states have been updated to add a new message
     if ((uid !== 0) && (Object.keys(newMessage).length > 0)) {
-      addMessage({...newMessage, uid});
+      addMessage(newMessage);
       setnewMessage([]);
     }
   },[newMessage, uid]);
@@ -171,8 +175,10 @@ export default function Chat(props) {
     console.log('onSend is called!')
     console.log('messages in onSend: ')
     console.log(messages);
-    setnewMessage(messages[0]);
+    let formattedMsg = {...messages[0], uid};
+    setnewMessage(formattedMsg);
     setmessages(previousMessages => GiftedChat.append(previousMessages, messages))
+    
   }, []);
 
   
@@ -202,13 +208,10 @@ export default function Chat(props) {
     if (currentMessage.location) {
       console.log('This is current location in renderCustomView: ')
       console.log(currentMessage.location.latitude);
-      return <MapView style={{width: 150,
-        height: 100,
-        borderRadius: 13,
-        margin: 3}}
-      region={{
-        latitude: currentMessage.location.latitude,
-        longitude: currentMessage.location.longitude,
+      return <MapView style={styles.map}
+      initialRegion={{
+        latitude: parseInt(currentMessage.location.latitude),
+        longitude: parseInt(currentMessage.location.longitude),
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
       }}/>
@@ -220,7 +223,11 @@ export default function Chat(props) {
   return (
     <View style={[styles.container, {backgroundColor: color}]}>
       <View style={styles.chat}>
-        <GiftedChat messages={messages} onSend={newMessages => onSend(newMessages)} user={{_id: 1}} renderBubble={renderBubble} 
+        <GiftedChat 
+        messages={messages} 
+        onSend={newMessages => onSend(newMessages)} 
+        user={{_id: 1}} 
+        renderBubble={renderBubble} 
         renderInputToolbar={props => renderInputToolbar(props)}
         renderActions={renderCustomActions}
         renderCustomView={renderCustomView}
@@ -248,6 +255,12 @@ const styles = {
   textBar: {
     borderRadius: 20,
     opacity: 0.8
+  },
+  map: {
+    width: 150,
+    height: 100,
+    borderRadius: 13,
+    margin: 3
   }
 }
 
