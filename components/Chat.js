@@ -1,10 +1,11 @@
 import { View, Text, Platform, KeyboardAvoidingView } from 'react-native';
 import MapView from 'react-native-maps';
 import React, {useState, useEffect, useCallback} from 'react';
-import { GiftedChat, Bubble, InputToolbar, Actions, ActionsProps } from 'react-native-gifted-chat';
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { addDoc, collection, getDocs, getFirestore, onSnapshot, where, query, orderBy } from "firebase/firestore";
+import { GiftedChat, Bubble, InputToolbar} from 'react-native-gifted-chat';
+
+import {db} from './firebaseConfig';
+
+import { addDoc, collection, onSnapshot, where, query } from "firebase/firestore";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
@@ -16,19 +17,7 @@ import {LogBox} from 'react-native';
 LogBox.ignoreLogs(['Warning: AsyncStorage has been extracted from react-native core']);
 
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDnVfMWEnDy7xbpWneNJS1lMcpWX5cJKOs",
-  authDomain: "textable-4be18.firebaseapp.com",
-  projectId: "textable-4be18",
-  storageBucket: "textable-4be18.appspot.com",
-  messagingSenderId: "802916814412",
-  appId: "1:802916814412:web:5cd4b6d194f0b8e1f52ee9",
-  measurementId: "G-XYDGNRCN5N"
-};
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 
 
@@ -209,14 +198,14 @@ export default function Chat(props) {
       console.log('This is current location in renderCustomView: ')
       console.log(currentMessage.location.latitude);
       return <MapView style={styles.map}
-      initialRegion={{
+      region={{
         latitude: parseInt(currentMessage.location.latitude),
         longitude: parseInt(currentMessage.location.longitude),
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
       }}/>
     }
-    return null
+    return null;
   }
   
   
