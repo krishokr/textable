@@ -2,8 +2,11 @@
 
 ### Last Updated: May 18, 2022
 
-<image src="./assets/demo1.png" width="100">
-<image src="./assets/demo2.png" width="100">
+<p float="left">
+    <image src="./assets/demo1.png" width="200">
+    <image src="./assets/demo2.png" width="200">
+</p>
+
 
 
 ## Overview
