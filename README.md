@@ -2,11 +2,11 @@
 
 ### Last Updated: May 18, 2022
 
-[[./assets/demo1.png|width=100px]]
-![chat page](./assets/demo2.png | width=100)
+<image src="./assets/demo1.png" width="100">
+<image src="./assets/demo2.png" width="100">
+
 
 ## Overview
-
 
 Textable is a colorful React Native mobile chat app for ios that allows users to personalize their chat through color customization and communicate through messages, images, and by sending their current location. 
 
